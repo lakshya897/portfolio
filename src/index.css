@@ -1189,6 +1189,20 @@ body::before {
   position: absolute;
   z-index: 2;
   text-align: center;
+  height: 160px;
+  width: 200px;
+}
+@media (max-width: 768px) {
+  .globe-wrapper .glass-card {
+    height: 120px;
+    width: 150px;
+  }
+}
+@media (max-width: 480px) {
+  .globe-wrapper .glass-card {
+    height: 100px;
+    width: 130px;
+  }
 }
 .globe-wrapper::after {
   content: '';
