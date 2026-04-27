@@ -1,7 +1,26 @@
 import { motion } from 'framer-motion';
 import { portfolioData } from '../data/portfolioData';
+import { useState, useEffect } from 'react';
 
 const Skills = () => {
+  const [orbitRadius, setOrbitRadius] = useState(120);
+
+  useEffect(() => {
+    const updateRadius = () => {
+      if (window.innerWidth < 480) {
+        setOrbitRadius(80);
+      } else if (window.innerWidth < 768) {
+        setOrbitRadius(100);
+      } else {
+        setOrbitRadius(120);
+      }
+    };
+
+    updateRadius();
+    window.addEventListener('resize', updateRadius);
+    return () => window.removeEventListener('resize', updateRadius);
+  }, []);
+
   const getVariantClass = (categoryName: string) => {
     if (categoryName === 'AI/LLM') return 'ai';
     if (categoryName === 'Languages') return 'lang';
@@ -56,8 +75,8 @@ const Skills = () => {
               key={tech}
               className="orbit-item"
               animate={{
-                x: Math.cos((i * 2 * Math.PI) / 5) * 120,
-                y: Math.sin((i * 2 * Math.PI) / 5) * 120,
+                x: Math.cos((i * 2 * Math.PI) / 5) * orbitRadius,
+                y: Math.sin((i * 2 * Math.PI) / 5) * orbitRadius,
               }}
               transition={{
                 duration: 12,
