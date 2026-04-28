@@ -114,6 +114,7 @@ body {
   opacity: 0.4;
   pointer-events: none;
   z-index: 0;
+  will-change: transform;
 }
 .orb-1 {
   width: 400px;
@@ -224,16 +225,7 @@ body {
   box-sizing: border-box;
 }
 
-/* NOISE OVERLAY */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 1;
-  opacity: 0.4;
-}
+/* NOISE OVERLAY - Removed for performance */
 
 /* NAVBAR */
 .navbar {
@@ -379,6 +371,7 @@ body::before {
   margin-top: 100px;
   z-index: 0;
   animation: floatIcon 6s ease-in-out infinite;
+  will-change: transform;
 }
 .floating-icon:nth-child(1) { top: 10%; left: 5%; animation-delay: 0s; }
 .floating-icon:nth-child(2) { top: 20%; right: 10%; animation-delay: 1s; }
@@ -693,6 +686,7 @@ body::before {
   display: flex;
   flex-direction: column;
   height: 100%;
+  will-change: transform;
 }
 @media (max-width: 768px) {
   .glass-card {
@@ -774,6 +768,7 @@ body::before {
   background: conic-gradient(from 0deg, #2563eb, #7c3aed, #06b6d4, #2563eb);
   animation: spin 8s linear infinite;
   z-index: 0;
+  will-change: transform;
 }
 .avatar-ring::after {
   content: '';

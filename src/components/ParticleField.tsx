@@ -10,15 +10,15 @@ const ParticleBackground = () => {
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, powerPreference: 'high-performance' });
     
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-    // Create particles
+    // Create particles - reduced count for better performance
     const particlesGeometry = new THREE.BufferGeometry();
     const isMobile = window.matchMedia('(max-width: 640px)').matches;
-    const particlesCount = isMobile ? 700 : 2000;
+    const particlesCount = isMobile ? 400 : 800;
     const posArray = new Float32Array(particlesCount * 3);
     const colorArray = new Float32Array(particlesCount * 3);
 
@@ -49,22 +49,42 @@ const ParticleBackground = () => {
 
     camera.position.z = 10;
 
-    // Mouse interaction
+    // Mouse interaction with throttling
     let mouseX = 0;
     let mouseY = 0;
+    let targetMouseX = 0;
+    let targetMouseY = 0;
+    let lastMouseMoveTime = 0;
 
     const handleMouseMove = (event: MouseEvent) => {
-      mouseX = (event.clientX / window.innerWidth) * 2 - 1;
-      mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+      const now = Date.now();
+      if (now - lastMouseMoveTime < 16) return; // Throttle to ~60fps
+      lastMouseMoveTime = now;
+      
+      targetMouseX = (event.clientX / window.innerWidth) * 2 - 1;
+      targetMouseY = -(event.clientY / window.innerHeight) * 2 + 1;
     };
 
     window.addEventListener('mousemove', handleMouseMove);
 
-    // Animation
+    // Animation with viewport visibility check
     let animationId: number;
-    const animate = () => {
+    let isVisible = true;
+    let lastFrameTime = 0;
+
+    const animate = (timestamp: number) => {
       animationId = requestAnimationFrame(animate);
       
+      // Limit to 60fps
+      if (timestamp - lastFrameTime < 16) return;
+      lastFrameTime = timestamp;
+
+      if (!isVisible) return;
+
+      // Smooth mouse interpolation
+      mouseX += (targetMouseX - mouseX) * 0.1;
+      mouseY += (targetMouseY - mouseY) * 0.1;
+
       const time = Date.now() * 0.001;
       particlesMesh.rotation.x = time * 0.05 + mouseY * 0.1;
       particlesMesh.rotation.y = time * 0.03 + mouseX * 0.1;
@@ -72,7 +92,7 @@ const ParticleBackground = () => {
       renderer.render(scene, camera);
     };
 
-    animate();
+    animate(0);
 
     // Handle resize
     const handleResize = () => {
@@ -83,11 +103,21 @@ const ParticleBackground = () => {
 
     window.addEventListener('resize', handleResize);
 
+    // Intersection Observer to pause when not visible
+    const observer = new IntersectionObserver(
+      (entries) => {
+        isVisible = entries[0].isIntersecting;
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(canvas);
+
     // Cleanup
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationId);
+      observer.disconnect();
       renderer.dispose();
       particlesGeometry.dispose();
       particlesMaterial.dispose();

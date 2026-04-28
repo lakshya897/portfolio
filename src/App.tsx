@@ -26,13 +26,27 @@ function App() {
     let y = 0;
     let ringX = 0;
     let ringY = 0;
+    let lastX = 0;
+    let lastY = 0;
+    let isIdle = true;
+    let idleTimeout: number;
+    let lastFrameTime = 0;
 
-    const render = () => {
-      dot.style.transform = `translate(${x - 4}px, ${y - 4}px)`;
+    const render = (timestamp: number) => {
+      // Limit to 60fps and skip if idle
+      if (timestamp - lastFrameTime < 16) {
+        rafId = requestAnimationFrame(render);
+        return;
+      }
+      lastFrameTime = timestamp;
 
-      ringX += (x - ringX) * 0.18;
-      ringY += (y - ringY) * 0.18;
-      ring.style.transform = `translate(${ringX - 18}px, ${ringY - 18}px)`;
+      if (!isIdle) {
+        dot.style.transform = `translate(${x - 4}px, ${y - 4}px)`;
+
+        ringX += (x - ringX) * 0.18;
+        ringY += (y - ringY) * 0.18;
+        ring.style.transform = `translate(${ringX - 18}px, ${ringY - 18}px)`;
+      }
 
       rafId = requestAnimationFrame(render);
     };
@@ -40,6 +54,17 @@ function App() {
     const onMove = (e: MouseEvent) => {
       x = e.clientX;
       y = e.clientY;
+      
+      // Check if cursor actually moved
+      if (x !== lastX || y !== lastY) {
+        isIdle = false;
+        clearTimeout(idleTimeout);
+        idleTimeout = window.setTimeout(() => {
+          isIdle = true;
+        }, 100); // Mark as idle after 100ms of no movement
+        lastX = x;
+        lastY = y;
+      }
     };
 
     const isInteractive = (el: Element | null) => {
@@ -63,6 +88,7 @@ function App() {
       window.removeEventListener('mousemove', onMove);
       window.removeEventListener('mouseover', onHoverCheck);
       cancelAnimationFrame(rafId);
+      clearTimeout(idleTimeout);
     };
   }, []);
 
